@@ -1,0 +1,35 @@
+# FastAPI & Server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# NLP / 텍스트 처리
+konlpy
+regex
+
+# PDF / 이미지 추출
+pdfminer.six
+pdf2image
+pillow
+pytesseract
+
+# DOCX
+python-docx
+
+# Google Vision OCR
+google-cloud-vision
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+
+# Diff Engine
+python-Levenshtein
+difflib
+rapidfuzz
+
+# LLM (Gemini)
+google-generativeai
+
+# 기타 유틸
+python-dotenv
+cachetools
