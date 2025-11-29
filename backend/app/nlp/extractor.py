@@ -48,7 +48,7 @@ def _guess_language(text: str) -> str:
     ko = len(re.findall(r"[가-힣]", text))
     en = len(re.findall(r"[A-Za-z]", text))
     if ko > 0 and en > 0:
-        return "mixed"
+        return "vie"
     if ko > 0:
         return "ko"
     if en > 0:
@@ -162,10 +162,20 @@ def _extract_candidate_terms(text: str) -> List[str]:
 # ---------------------------------------------------------
 # 6) NLPInfo 구성함수
 # ---------------------------------------------------------
-def build_nlp_info(text: str, language_hint: Optional[str] = None) -> NLPInfo:
+def build_nlp_info(
+    text: str,
+    language_hint: Optional[str] = None,
+    force_language: Optional[str] = None
+) -> NLPInfo:
     text_norm = normalize_whitespace(text)
 
-    language = language_hint or _guess_language(text_norm)
+    # 1️⃣ 사용자가 언어를 직접 지정했다면 → 무조건 그걸 우선한다
+    if force_language:
+        language = force_language
+    else:
+        # 2️⃣ 아니면 language_hint > 자동 언어추론 순서
+        language = language_hint or _guess_language(text_norm)
+
     clauses = _split_clauses(text_norm)
     domain_tags = _guess_domain_tags(text_norm)
     parties = _guess_parties(text_norm)
