@@ -1,35 +1,31 @@
-# FastAPI & Server
 fastapi
 uvicorn[standard]
 python-multipart
+sqlalchemy
+pydantic==2.12.5
+pydantic-settings
+python-dotenv
 
-# NLP / 텍스트 처리
+# NLP
 konlpy
 regex
 
-# PDF / 이미지 추출
+# PDF 처리
 pdfminer.six
 pdf2image
 pillow
+
+# OCR
 pytesseract
-
-# DOCX
-python-docx
-
-# Google Vision OCR
 google-cloud-vision
 google-auth
 google-auth-oauthlib
 google-auth-httplib2
-
-# Diff Engine
-python-Levenshtein
-difflib
-rapidfuzz
-
-# LLM (Gemini)
 google-generativeai
 
-# 기타 유틸
-python-dotenv
-cachetools
+
+# string similarity
+python-Levenshtein
+
+# HTTP async
+aiohttp

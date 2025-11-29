@@ -1,143 +1,132 @@
 import streamlit as st
 import requests
 
-st.set_page_config(
-    page_title="📄 Legal AI 문서 분석기",
-    page_icon="⚖️",
-    layout="wide"
-)
+BASE = "http://127.0.0.1:8000"
 
-st.title("📄 Legal AI 문서 분석기")
-st.write("이미지 · PDF · Word · HWP 파일을 업로드하면 AI가 분석합니다.")
+st.title("📌 Legal AI Backend Test Dashboard")
+st.write("백엔드 모든 기능을 하나의 화면에서 테스트할 수 있습니다.")
+
 st.markdown("---")
 
+# ============================
+# 1) 계약서 분석
+# ============================
+st.header("📘 1. 계약서 분석 테스트 (/contracts/analyze)")
 
-# ======================================================================================
-# Helper — 문서 분석 렌더링
-# ======================================================================================
+text_input = st.text_area("계약서 전문 입력", height=200)
+filename = st.text_input("파일 제목", "uploaded.txt")
 
-def render_document_result(doc):
-    st.success("분석 완료! 아래 결과를 확인하세요.")
-    st.markdown("---")
+if st.button("📄 계약서 분석 실행"):
+    res = requests.post(
+        f"{BASE}/contracts/analyze",
+        json={"text": text_input, "filename": filename, "language": "ko"}
+    )
+    st.write(res.json())
 
-    summary = doc["summary"]
-    risk = doc["risk_profile"]
+st.markdown("---")
 
-    st.subheader("📌 문서 요약")
+# ============================
+# 2) 문서 리스트 조회
+# ============================
+st.header("📚 2. 문서 리스트 (/contracts/list)")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("문서 제목", summary.get("title") or "제목 없음")
-    with col2:
-        st.metric("한 줄 요약", summary.get("one_line_summary", ""))
-    with col3:
-        st.metric("위험 수준", risk.get("overall_risk_level", "정보 없음"))
+if st.button("📂 문서 리스트 가져오기"):
+    res = requests.get(f"{BASE}/contracts/list")
+    docs = res.json()
+    st.json(docs)
 
-    st.write("### 📝 전체 요약")
-    st.write(summary.get("overall_summary", ""))
-
-    st.markdown("---")
-
-    colA, colB = st.columns(2)
-    with colA:
-        st.write("### 📌 핵심 포인트")
-        for p in summary.get("key_points", []):
-            st.markdown(f"- {p}")
-
-        st.write("### ⚠️ 주요 위험 요소")
-        for r in summary.get("main_risks", []):
-            st.error(f"- {r}")
-
-    with colB:
-        st.write("### 🛡 주요 보호 장치")
-        for p in summary.get("main_protections", []):
-            st.success(f"- {p}")
-
-        st.write("### 📌 권장 액션")
-        for a in summary.get("recommended_actions", []):
-            st.warning(f"- {a}")
-
-    st.markdown("---")
-
-    st.subheader("📊 리스크 프로파일")
-    score = risk.get("overall_risk_score", 0)
-    st.write(f"전체 위험 점수: {score} / 100")
-    st.progress(score / 100)
-
-    for key, val in risk.get("risk_dimensions", {}).items():
-        st.write(f"{key}: {val}점")
-        st.progress(int(val) / 100)
-
-    st.markdown("---")
-
-    st.subheader("📄 조항별 분석")
-
-    for clause in doc.get("clauses", []):
-        sid = clause.get("clause_id", "unknown")
-        preview = clause.get("summary") or clause.get("raw_text", "")[:40]
-
-        with st.expander(f"📌 {sid} — {preview}"):
-            st.write("### 요약")
-            st.write(clause.get("summary", ""))
-
-            st.write("### 위험도")
-            st.write(f"- 수준: {clause.get('risk_level')}")
-            st.write(f"- 점수: {clause.get('risk_score')}")
-            st.progress(int(clause.get("risk_score", 0)) / 100)
-
-            st.write("### 원문")
-            st.code(clause.get("raw_text", ""))
-
-    st.markdown("---")
-
-    st.subheader("📚 용어 정의")
-    terms = doc.get("terms", [])
-    if terms:
-        st.table([
-            {
-                "용어": t.get("term"),
-                "설명": t.get("korean"),
-                "영문": t.get("english"),
-                "출처": t.get("source"),
-            }
-            for t in terms
-        ])
-    else:
-        st.info("용어 없음")
-
-    st.markdown("---")
-    st.success("🎉 분석 완료!")
+    if docs:
+        doc_ids = [d["id"] for d in docs]
+        st.session_state["doc_ids"] = doc_ids
 
 
-# ======================================================================================
-# OCR PREVIEW
-# ======================================================================================
+st.markdown("---")
 
-uploaded_file = st.file_uploader(
-    "분석할 문서를 업로드하세요",
-    type=["pdf", "png", "jpg", "jpeg", "docx", "hwp"]
-)
+# ============================
+# 3) 문서 상세 조회
+# ============================
+st.header("📄 3. 문서 상세조회 (/contracts/{id})")
 
-if uploaded_file:
-    if st.button("📝 OCR / 텍스트 미리보기"):
-        res = requests.post(
-            "http://127.0.0.1:8000/api/files/extract-text",
-            files={"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
-        )
-        if res.ok:
-            st.text_area("OCR 텍스트", res.json().get("preview", ""), height=300)
-        else:
-            st.error(res.text)
+doc_id = st.number_input("문서 ID", min_value=1)
 
-    if st.button("🔍 전체 문서 심층 분석 시작"):
-        res = requests.post(
-            "http://127.0.0.1:8000/api/files/interpret",
-            files={"file": (uploaded_file.name, uploaded_file, uploaded_file.type)},
-            data={"language": "ko"},
-        )
-        if res.ok:
-            data = res.json()
-            render_document_result(data.get("document", {}))
-        else:
-            st.error(res.text)
+if st.button("🔍 문서 상세 보기"):
+    res = requests.get(f"{BASE}/contracts/{doc_id}")
+    st.json(res.json())
 
+st.markdown("---")
+
+# ============================
+# 4) 조항 조회
+# ============================
+st.header("📑 4. 조항 조회 (/contracts/{id}/clauses)")
+
+if st.button("📌 조항 보기"):
+    res = requests.get(f"{BASE}/contracts/{doc_id}/clauses")
+    st.json(res.json())
+
+st.markdown("---")
+
+# ============================
+# 5) 용어 조회
+# ============================
+st.header("📘 5. 용어 조회 (/contracts/{id}/terms)")
+
+if st.button("📌 용어 보기"):
+    res = requests.get(f"{BASE}/contracts/{doc_id}/terms")
+    st.json(res.json())
+
+st.markdown("---")
+
+# ============================
+# 6) Chat: 질의응답
+# ============================
+st.header("💬 6. 법률 질의응답 (/legal/ask)")
+
+ask_text = st.text_input("질문 입력")
+
+if st.button("🤖 질문하기"):
+    res = requests.post(f"{BASE}/legal/ask", json={"text": ask_text, "language": "ko"})
+    st.json(res.json())
+
+st.markdown("---")
+
+# ============================
+# 7) 대화 히스토리
+# ============================
+st.header("📝 7. 최근 대화 히스토리 (/legal/history)")
+
+if st.button("📜 히스토리 조회"):
+    res = requests.get(f"{BASE}/legal/history")
+    st.json(res.json())
+
+st.markdown("---")
+
+# ============================
+# 8) 북마크 기능
+# ============================
+st.header("⭐ 8. 북마크 기능 (toggle / list)")
+
+bookmark_conv_id = st.number_input("대화 ID", min_value=1, key="bm_id")
+
+if st.button("⭐ 북마크 토글"):
+    res = requests.post(f"{BASE}/legal/toggle-bookmark", json={"conversation_id": bookmark_conv_id})
+    st.json(res.json())
+
+if st.button("📌 북마크 리스트"):
+    res = requests.get(f"{BASE}/legal/bookmarks")
+    st.json(res.json())
+
+st.markdown("---")
+
+# ============================
+# 9) 공유 링크
+# ============================
+st.header("🔗 9. 공유 링크 생성 (/legal/create-share-link)")
+
+share_conv_id = st.number_input("공유할 대화 ID", min_value=1, key="sl_id")
+
+if st.button("🔗 링크 생성"):
+    res = requests.post(f"{BASE}/legal/create-share-link", json={"conversation_id": share_conv_id})
+    st.json(res.json())
+
+st.write("---")

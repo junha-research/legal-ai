@@ -5,7 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.legal import router as legal_router
 from app.routes.file_routes import router as file_router
-
+from app.routes.law_routes import router as law_router
+from app.routes.contract_routes import router as contract_router
+from app.routes.legal import router as legal_router
+from app.db.database import Base, engine
 
 app = FastAPI(
     title="Legal AI Backend",
@@ -25,4 +28,14 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(legal_router, prefix="/api", tags=["legal"])
 app.include_router(file_router)
+app.include_router(law_router)
+app.include_router(contract_router)
+app.include_router(legal_router, prefix="/legal")
 
+
+
+@app.on_event("startup")
+def on_startup():
+    print("📌 DB 초기화 중...")
+    Base.metadata.create_all(bind=engine)
+    print("📌 DB 테이블 생성 완료") 

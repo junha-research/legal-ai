@@ -66,3 +66,9 @@ ocr_output/
 .idea/
 .vscode/
 *.iml
+
+service-account.json
+*.faiss
+*.pkl
+deepeval/
+precedent_faiss_db/
