@@ -9,6 +9,7 @@ from app.routes.law_routes import router as law_router
 from app.routes.contract_routes import router as contract_router
 from app.routes.legal import router as legal_router
 from app.db.database import Base, engine
+from app.routes.auth_test import router as auth_test
 
 app = FastAPI(
     title="Legal AI Backend",
@@ -16,10 +17,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS 설정 (프론트 연동 시 도메인 추가)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 필요 시 ["http://localhost:3000"] 등으로 제한
+    allow_origins=[
+        "http://localhost:3000",
+        "https://your-frontend-url.web.app",
+        "https://your-render-app.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,6 +35,7 @@ app.include_router(file_router)
 app.include_router(law_router)
 app.include_router(contract_router)
 app.include_router(legal_router, prefix="/legal")
+app.include_router(auth_test)
 
 
 

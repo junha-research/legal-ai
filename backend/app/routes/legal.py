@@ -20,6 +20,7 @@ from app.services.llm import analyze_contract, generate_legal_answer_multilang
 # DB 모델
 from app.db.models import User, Conversation, Bookmark, ShareLink
 
+from app.deps.auth import get_current_user, get_db
 
 router = APIRouter()
 
@@ -46,25 +47,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# -----------------------------------------------------
-# 📌 Mock 사용자 (임시 로그인)
-# -----------------------------------------------------
-def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).filter(User.open_id == "mock-user-123").first()
-    if not user:
-        user = User(
-            open_id="mock-user-123",
-            name="테스트 사용자",
-            email="test@example.com",
-            login_method="mock",
-            role="user",
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    return user
 
 
 # -----------------------------------------------------

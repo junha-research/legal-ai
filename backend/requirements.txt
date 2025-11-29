@@ -1,31 +1,28 @@
-fastapi
-uvicorn[standard]
-python-multipart
-sqlalchemy
+fastapi==0.118.0
+uvicorn[standard]==0.37.0
+python-multipart==0.0.20
+sqlalchemy==2.0.40
 pydantic==2.12.5
-pydantic-settings
-python-dotenv
+pydantic-settings==2.12.0
+python-dotenv==1.1.1
 
-# NLP
-konlpy
-regex
+# NLP / 텍스트 유틸
+regex==2024.4.28
 
-# PDF 처리
-pdfminer.six
-pdf2image
-pillow
+# 파일 처리
+python-docx==1.1.2
+pdf2image==1.17.0
+pillow==9.4.0
 
-# OCR
-pytesseract
-google-cloud-vision
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-google-generativeai
+# Async HTTP
+aiohttp==3.13.2
 
+# OCR + Google API
+google-cloud-vision==3.11.0
+google-auth==2.41.0
+google-auth-oauthlib==1.2.3
+google-auth-httplib2==0.2.1
+google-generativeai==0.8.5
 
-# string similarity
-python-Levenshtein
-
-# HTTP async
-aiohttp
+# Text Similarity
+python-Levenshtein==0.27.3

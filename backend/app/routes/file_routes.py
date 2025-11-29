@@ -16,6 +16,7 @@ from app.db.models import User
 import google.generativeai as genai
 import asyncio
 from app.services.llm_prompt import build_contract_analysis_prompt
+from app.deps.auth import get_current_user, get_db
 
 
 
