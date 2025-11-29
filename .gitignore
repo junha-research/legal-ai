@@ -70,5 +70,6 @@ ocr_output/
 service-account.json
 *.faiss
 *.pkl
-deepeval/
+deepeval
 precedent_faiss_db/
+firebase-service-account.json

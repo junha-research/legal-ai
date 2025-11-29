@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from app.deps.auth import get_current_user, get_db
 
 from app.db.database import SessionLocal
 from app.services.llm import analyze_contract
@@ -31,23 +32,6 @@ def get_db():
     finally:
         db.close()
 
-
-# ---------------------------
-# Mock 유저
-# ---------------------------
-def get_current_user(db: Session = Depends(get_db)) -> User:
-    user = db.query(User).filter(User.open_id == "mock-user-123").first()
-    if not user:
-        user = User(
-            open_id="mock-user-123",
-            name="테스트 사용자",
-            email="test@example.com",
-            login_method="mock"
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-    return user
 
 
 # =============================================
