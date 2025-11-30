@@ -1,33 +1,42 @@
 # ⚖️ Legal AI Backend  
 FastAPI 기반 계약서/법률 문서 자동 분석 백엔드
 
-본 백엔드는 계약서·법률 문서를 업로드하면  
-**OCR → NLP 전처리 → 법제처 용어조회 → Gemini 기반 심층 분석 -> DB 저장**을 수행하는 법률 분석 백엔드 입니다.
-
-계약서 요약, 조항별 분석, 리스크 진단, 인과관계 그래프, 다국어 설명 (ko/en/vie)까지 지원합니다.
+본 백엔드는 계약서·법률 문서를 업로드하면:
+1. OCR (Google Vision)
+2. NLP 전처리 (조항 단위 추출, 용어 candidate, 도메인/당사자 파악)
+3. 법제처 API 용어정의 조회
+4. Gemini 기반 심층 분석(JSON-only)
+5. DB 저장 (문서·조항·용어 구조화 저장).   
+까지 자동으로 처리하는 법률 문서 AI 분석 백엔드입니다.    
+한국어, 영어, 베트남어 3개 언어 요약·분석·설명을 지원합니다.
 ---
 
-# 1. 실행 방법
-
-## 1) 프로젝트 루트(legal-ai)에서 가상환경 활성화
+# 1. 백엔드 실행 방법
+## 0) 패키지 설치
+### 가상환경 만들기 & 활성화
 ```bash
+python3 -m venv venv
 source venv/bin/activate
+
 ```
-## 2) backend 폴더로 이동
+## backend 라이브러리 설치
+```bash
+pip install -r requirements.txt
+```
+## 1) 서버 실행
+프로젝트 루트에서 : 
 ```bash
 cd backend
-```
-## 3) 서버 실행
-```bash
 uvicorn app.main:app --reload
 ```
-## 4) API 문서 확인
+## 2) API 문서 확인
 ```bash
 Swagger UI
 http://127.0.0.1:8000/docs
 OpenAPI JSON
 http://127.0.0.1:8000/openapi.json
 ```
+
 
 # 2. 환경변수 (.env)
 프로젝트 루트에 .env 파일 필요
@@ -49,7 +58,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/google_vision.json
 
 ### NLP 전처리 (app/nlp/extractor.py)
 - 조항 자동 분리(제1조 ~)
-- 언어 감지(ko/en) 
+- 언어 감지(ko/en/vi) 
 - 도메인 태깅(근로/임대차/NDA/IT 등)
 - 당사자 추출(근로자/사용자/임대인/임차인)
 - 법률 용어 후보 자동 추출
@@ -61,7 +70,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/google_vision.json
 - 오류 발생 시 graceful fallback
 
 ### LLM 분석 (app/services/llm.py)
-- Gemini 2.0 Flash Lite 사용
+- Gemini 2.5 Flash 사용
 - JSON-only 출력 강제 프롬프트
 - 조항별 요약/리스크/태그 생성
 - 문서 전체 요약, 위험도 점수
@@ -73,28 +82,28 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/google_vision.json
 ```bash
 backend/
  ├── app/
- │   ├── main.py                # FastAPI app 초기화
+ │   ├── main.py
  │   ├── routes/
- │   │     ├── legal.py         # 텍스트 분석, 질의응답, 북마크, 공유 기능
- │   │     ├── file_routes.py   # 파일 업로드/OCR
- │   │     ├── contract_routes.py # 계약서 API
- │   │     └── law_routes.py    # 법제처 용어 API
+ │   │     ├── legal.py             # 텍스트 분석, 질의응답, 문서 관리
+ │   │     ├── file_routes.py       # 파일 업로드, OCR, 분석
+ │   │     ├── contract_routes.py   # 계약서 리스트/상세
+ │   │     ├── law_routes.py        # 법제처 용어검색
+ │   │     └── auth_test.py         # Firebase 인증 확인
  │   ├── services/
- │   │     ├── extractor.py     # OCR + 파일 텍스트 추출
- │   │     ├── law_api.py       # 법제처 용어 조회
- │   │     ├── llm.py           # Gemini 분석 로직
- │   │     └── document_service.py # DB 저장 처리
- │   ├── nlp/
- │   │     └── extractor.py     # 조항/언어/용어 분리
+ │   │     ├── extractor.py         # OCR + 파일처리
+ │   │     ├── law_api.py           # 법제처 DRF API
+ │   │     ├── llm.py               # Gemini 분석
+ │   │     └── document_service.py  # DB 저장
+ │   ├── nlp/extractor.py           # 조항/언어/도메인/용어 추출
  │   ├── db/
- │   │     ├── database.py      # DB 연결 (SQLite/Postgres)
- │   │     └── models.py        # User/Conversation/Bookmark 등 모델
- │   ├── models/
- │   │     └── legal.py         # Pydantic DocumentResult 구조
- │   └── utils/
- │         └── text_cleaner.py  # 공백 정리 등
+ │   │     ├── database.py
+ │   │     └── models.py            # User/Document/Clause/Term 등
+ │   ├── models/legal.py            # DocumentResult 구조 정의
+ │   └── utils/text_cleaner.py
+ ├── requirements.txt
  ├── venv/
  └── README.md
+
 ```
 # 6. 흐름
 ## 1) 전체 처리

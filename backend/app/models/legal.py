@@ -80,7 +80,7 @@ class DocumentSummary(BaseModel):
 # 📌 문서 메타 정보
 # =========================
 class DocumentMeta(BaseModel):
-    language: Literal["ko", "en", "vie"] = "ko"
+    language: Literal["ko", "en", "vi"] = "ko"
     domain_tags: List[str] = Field(default_factory=list)
     parties: List[str] = Field(default_factory=list)
     governing_law: Optional[str] = None

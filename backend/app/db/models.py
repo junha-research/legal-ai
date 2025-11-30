@@ -9,13 +9,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
 
-from app.db.legal import Clause, Term
 
 # =========================
 # 📌 Document 모델 (확장 적용)
 # =========================
 class Document(Base):
-    __tablename__ = "documents"
+    __tablename__ = "document"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -40,11 +39,14 @@ class Document(Base):
     risk_level = Column(String(20), nullable=True)           # 낮음/중간/높음/치명적
 
     # 관계
+    # ❗ 수정됨: document → documents
     user = relationship("User", back_populates="documents")
 
-    # 🔥 정식 관계 (중복 제거 후 정상버전)
+    # Clause, Term 관계
     clauses = relationship("Clause", back_populates="document", cascade="all, delete-orphan")
     terms = relationship("Term", back_populates="document", cascade="all, delete-orphan")
+
+
 # =========================
 # 📌 User 모델
 # =========================
@@ -61,10 +63,11 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_signed_in = Column(DateTime(timezone=True), server_default=func.now())
 
+    # 관계
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
     bookmarks = relationship("Bookmark", back_populates="user", cascade="all, delete-orphan")
 
-    # Document 관계
+    # Document 관계 (정상)
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
 
 
@@ -115,4 +118,3 @@ class ShareLink(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     conversation = relationship("Conversation", back_populates="share_links")
-
