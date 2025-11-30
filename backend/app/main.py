@@ -19,13 +19,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://your-frontend-url.web.app",
-        "https://your-render-app.onrender.com",
-    ],
+    allow_origins=["*"],   # 개발 중에는 전체 허용이 가장 안전함
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
