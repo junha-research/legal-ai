@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi.responses import StreamingResponse
 
 from app.db.database import SessionLocal
-from app.services.document_service import save_document_from_analysis
+from app.services.document_service import save_document_from_analysis, save_document
 
 # 🔥 FIX: 올바른 extractor import
 from app.services.extractor import extract_text_from_file
@@ -184,6 +184,7 @@ async def full_interpret(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # 1) 파일에서 텍스트 추출
     try:
         text = await extract_text_from_file(file)
     except ValueError as e:
@@ -192,37 +193,33 @@ async def full_interpret(
     if not text.strip():
         raise HTTPException(400, "파일에서 텍스트를 추출하지 못했습니다.")
 
+    # 2) NLP 분석
     nlp_info = build_nlp_info(text, language_hint=language)
 
+    # 3) 법령 용어 정의 조회
     try:
         term_map = await fetch_term_definitions(nlp_info.candidate_terms)
     except Exception:
         term_map = {}
 
-    # 🔥 언어 반영된 LLM 분석
+    # 4) LLM 계약서 분석
     document: DocumentResult = await analyze_contract(
         original_text=text,
         nlp_info=nlp_info,
         term_definitions=term_map,
-        output_language=language,   # ★ 추가
+        output_language=language,
     )
 
-    summary_text = document.summary.overall_summary or "요약 없음"
-
-    answer_markdown = (
-        "```json\n"
-        + json.dumps(document.dict(), indent=2, ensure_ascii=False)
-        + "\n```"
-    )
-
-    saved = save_document_from_analysis(
+    # 5) DB에 전체 저장 (🔥 핵심 변경 부분)
+    saved = save_document(
         db=db,
+        analysis=document,
+        file_name=file.filename,
         user_id=current_user.id,
-        original_text=text,
-        summary=summary_text,
-        answer_markdown=answer_markdown,
-    )
+        language=language,
+)
 
+    # 6) 클라이언트에 반환할 document_id 동기화
     document.document_id = str(saved.id)
 
     return InterpretResponse(document=document)

@@ -35,7 +35,7 @@ def _get_model():
 
 
 # ----------------------------------------------------------
-# Streaming 응답 처리 (🔥 완전 안정화 버전)
+# Streaming 응답 처리
 # ----------------------------------------------------------
 async def _stream_llm_text(prompt: str) -> str:
     model = _get_model()
@@ -54,7 +54,6 @@ async def _stream_llm_text(prompt: str) -> str:
 
     for chunk in response:
         try:
-            # 후보가 없으면 skip
             if not hasattr(chunk, "candidates") or not chunk.candidates:
                 continue
 
@@ -63,8 +62,7 @@ async def _stream_llm_text(prompt: str) -> str:
                 if hasattr(part, "text") and part.text:
                     chunks.append(part.text)
 
-        except Exception:
-            # finish_reason 등 빈 청크는 무시
+        except:
             continue
 
     return "".join(chunks)
@@ -76,7 +74,6 @@ async def _stream_llm_text(prompt: str) -> str:
 def _strip_to_json(text: str) -> str:
     if not text:
         return ""
-
     t = text.strip()
 
     if t.startswith("```"):
@@ -89,6 +86,7 @@ def _strip_to_json(text: str) -> str:
     first = t.find("{")
     if first != -1:
         t = t[first:]
+
     return t.strip()
 
 
@@ -122,6 +120,7 @@ def _repair_json(json_text: str) -> str:
              .replace(", ]", "]")
              .replace(",\n}", "}")
         )
+
         if replaced == s:
             break
 
@@ -149,19 +148,26 @@ def _repair_json(json_text: str) -> str:
 # 리스크레벨 자동 변환
 # ----------------------------------------------------------
 RISK_LEVEL_MAP = {
+    # 영어
     "low": "낮음",
     "medium": "중간",
     "moderate": "중간",
     "high": "높음",
     "critical": "치명적",
     "severe": "치명적",
-
-    # Vietnamese
+    # 베트남어
     "thấp": "낮음",
     "trung bình": "중간",
     "cao": "높음",
-    "nghiêm trọng": "치명적"
+    "nghiêm trọng": "치명적",
 }
+
+def fix_risk_level(val: str) -> str:
+    """LLM 출력 risk_level → 강제 한국어 매핑"""
+    if not isinstance(val, str):
+        return "중간"
+    s = val.strip().lower()
+    return RISK_LEVEL_MAP.get(s, "중간")  # 매핑 실패 시 기본값 적용
 
 
 # ----------------------------------------------------------
@@ -193,11 +199,11 @@ def _safe_parse_document_result(data: dict) -> DocumentResult:
     def _to_int(x):
         try:
             return int(float(x))
-        except Exception:
+        except:
             return 0
 
     raw_level = (risk_raw.get("overall_risk_level", "중간") or "").lower()
-    mapped_level = RISK_LEVEL_MAP.get(raw_level, raw_level)
+    mapped_level = fix_risk_level(raw_level)
 
     dims_raw = risk_raw.get("risk_dimensions", {}) or {}
     fixed_dims = {k: _to_int(v) for k, v in dims_raw.items()}
@@ -209,16 +215,23 @@ def _safe_parse_document_result(data: dict) -> DocumentResult:
         comments=risk_raw.get("comments", ""),
     )
 
+    # ---------------------------------------------------------
+    # ⚡ clauses risk_level 강제 한국어 변환 적용 (핵심 수정)
+    # ---------------------------------------------------------
     clauses_out = []
     for c in data.get("clauses", []) or []:
         tags_raw = c.get("tags", {}) or {}
+
+        raw_clause_level = c.get("risk_level", "중간")
+        fixed_clause_risk = fix_risk_level(raw_clause_level)
+
         clauses_out.append(
             ClauseResult(
                 clause_id=c.get("clause_id", "unknown"),
                 title=c.get("title"),
                 raw_text=c.get("raw_text", ""),
                 summary=c.get("summary", ""),
-                risk_level=c.get("risk_level", "중간"),
+                risk_level=fixed_clause_risk,         # ← ★ 중요!
                 risk_score=_to_int(c.get("risk_score", 50)),
                 risk_factors=c.get("risk_factors", []) or [],
                 protections=c.get("protections", []) or [],
