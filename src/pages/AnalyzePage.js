@@ -85,7 +85,7 @@ export default function AnalyzePage() {
 
     try {
       setStep("analyzing");
-      const res = await api.post("/api/files/interpret", form);
+      const res = await api.post("/api/files/full-interpret", form);
       setDocResult(res.data.document);
       setStep("done");
     } catch (e) {

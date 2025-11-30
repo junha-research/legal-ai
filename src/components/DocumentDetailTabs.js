@@ -10,10 +10,10 @@ export default function DocumentDetailTabs({ activeTab, onChange, counts }) {
     risk: { ko: "위험도", en: "Risk", vi: "Rủi ro" },
     clauses: { ko: "조항", en: "Clauses", vi: "Điều khoản" },
     terms: { ko: "용어", en: "Terms", vi: "Thuật ngữ" },
-    raw: { ko: "Raw JSON", en: "Raw JSON", vi: "Raw JSON" },
+    raw: { ko: "전체 데이터", en: "Raw JSON", vi: "Raw JSON" },
   };
 
-  const t = (k) => labels[k]?.[language] || labels[k]?.ko || k;
+  const t = (key) => labels[key]?.[language] || labels[key]?.ko || key;
 
   const tabs = [
     { id: "summary", label: t("summary") },
@@ -25,20 +25,29 @@ export default function DocumentDetailTabs({ activeTab, onChange, counts }) {
 
   return (
     <div className="doc-tabs">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          className={`doc-tab-item ${
-            activeTab === tab.id ? "active" : ""
-          }`}
-          onClick={() => onChange(tab.id)}
-        >
-          <span>{tab.label}</span>
-          {typeof tab.badge === "number" && (
-            <span className="doc-tab-badge">{tab.badge}</span>
-          )}
-        </button>
-      ))}
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+
+        return (
+          <button
+            key={tab.id}
+            className={`doc-tab-item ${isActive ? "active" : ""}`}
+            onClick={() => onChange(tab.id)}
+          >
+            <span className="doc-tab-label">{tab.label}</span>
+
+            {typeof tab.badge === "number" && (
+              <span
+                className={`doc-tab-badge ${
+                  isActive ? "badge-active" : ""
+                }`}
+              >
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

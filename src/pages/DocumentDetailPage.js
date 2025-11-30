@@ -17,8 +17,6 @@ export default function DocumentDetailPage() {
   const location = useLocation();
   const { t, formatDate } = useLanguage();
 
-  const initialDocResult = null;
-
   const [documentResult, setDocumentResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,10 +24,9 @@ export default function DocumentDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   // ==============================
-  // 🔥 백엔드에서 불러오는 Fallback (DB → pseudoDoc 생성)
+  // 🔥 백엔드 → pseudoDoc 변환 (핵심 수정)
   // ==============================
   useEffect(() => {
-    // 이미 location.state 로 전달된 documentResult 있으면 fetch 안함
     if (documentResult || !id) return;
 
     let cancelled = false;
@@ -45,19 +42,22 @@ export default function DocumentDetailPage() {
         const clauseRes = await api.get(`/contracts/${id}/clauses`);
         const termRes = await api.get(`/contracts/${id}/terms`);
 
-        // 🔥 LLM JSON 구조에 최대한 맞춘 pseudoDoc 형태
+        // ⭐ 수정된 pseudoDoc (백엔드 응답 구조 기반)
         const pseudoDoc = {
           document_id: String(meta.id),
+
           meta: {
             language: meta.language || "ko",
             domain_tags: meta.domain_tags ? meta.domain_tags.split(",") : [],
             parties: meta.parties ? meta.parties.split(",") : [],
             governing_law: meta.governing_law || null,
           },
+
           summary: {
             title: meta.title,
             overall_summary: meta.summary || "",
-            one_line_summary: meta.one_line_summary || meta.summary || "",
+            one_line_summary: meta.summary || "",
+
             key_points: meta.key_points ? JSON.parse(meta.key_points) : [],
             main_risks: meta.main_risks ? JSON.parse(meta.main_risks) : [],
             main_protections: meta.main_protections
@@ -67,6 +67,7 @@ export default function DocumentDetailPage() {
               ? JSON.parse(meta.recommended_actions)
               : [],
           },
+
           risk_profile: {
             overall_risk_level: meta.risk_level || "중간",
             overall_risk_score: meta.risk_score ?? 50,
@@ -75,11 +76,12 @@ export default function DocumentDetailPage() {
               : {},
             comments: meta.risk_comments || "",
           },
+
           clauses: (clauseRes.data || []).map((c) => ({
             clause_id: c.clause_id,
             title: c.title,
-            raw_text: c.raw_text, // 🔥 원문 저장
-            summary: c.summary, // 🔥 요약 저장
+            raw_text: c.raw_text,
+            summary: c.summary,
             risk_level: c.risk_level,
             risk_score: c.risk_score,
             risk_factors: [],
@@ -87,19 +89,18 @@ export default function DocumentDetailPage() {
             red_flags: [],
             action_guides: [],
             key_points: [],
-            tags: {
-              domain: [],
-              risk: [],
-              parties: [],
-            },
+            tags: { domain: [], risk: [], parties: [] },
           })),
+
           causal_graph: [],
-          terms: (termRes.data || []).map((tItem) => ({
-            term: tItem.term,
-            korean: tItem.korean,
-            english: tItem.english,
-            source: tItem.source || "MOLEG",
+
+          terms: (termRes.data || []).map((t) => ({
+            term: t.term,
+            korean: t.korean,
+            english: t.english,
+            source: t.source || "MOLEG",
           })),
+
           __meta: {
             created_at: meta.created_at,
           },
@@ -118,10 +119,7 @@ export default function DocumentDetailPage() {
     }
 
     loadFromBackend();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => (cancelled = true);
   }, [id, documentResult, t]);
 
   // ==============================
@@ -157,13 +155,9 @@ export default function DocumentDetailPage() {
     __meta?.created_at || location.state?.created_at || null;
 
   // ==============================
-  // 즐겨찾기 토글
+  // 즐겨찾기
   // ==============================
   const handleToggleFavorite = async () => {
-    if (!id) {
-      setIsFavorite((prev) => !prev);
-      return;
-    }
     try {
       const res = await api.post(`/contracts/${id}/favorite`);
       setIsFavorite(res.data.is_favorite);
@@ -173,13 +167,8 @@ export default function DocumentDetailPage() {
     }
   };
 
-  const handleRename = () => {
-    alert(t("detail.rename_desc"));
-  };
-
-  const handleExportPdf = () => {
-    alert(t("detail.export_desc"));
-  };
+  const handleRename = () => alert(t("detail.rename_desc"));
+  const handleExportPdf = () => alert(t("detail.export_desc"));
 
   // ==============================
   // 페이지 렌더
@@ -237,9 +226,8 @@ export default function DocumentDetailPage() {
         </div>
       </div>
 
-      {/* 상단 Summary + Risk */}
+      {/* Summary + Risk */}
       <div className="doc-detail-top-grid">
-        {/* Summary */}
         <div className="doc-detail-card">
           <div className="doc-card-header">
             <span className="doc-card-title">{t("detail.summary")}</span>
@@ -256,7 +244,9 @@ export default function DocumentDetailPage() {
           <div className="doc-summary-tags-grid">
             {summary?.key_points?.length > 0 && (
               <div className="doc-summary-tag-section">
-                <div className="doc-summary-tag-label">{t("detail.key_points")}</div>
+                <div className="doc-summary-tag-label">
+                  {t("detail.key_points")}
+                </div>
                 <ul>
                   {summary.key_points.map((k, i) => (
                     <li key={i}>{k}</li>
@@ -267,7 +257,9 @@ export default function DocumentDetailPage() {
 
             {summary?.main_risks?.length > 0 && (
               <div className="doc-summary-tag-section">
-                <div className="doc-summary-tag-label">{t("detail.main_risks")}</div>
+                <div className="doc-summary-tag-label">
+                  {t("detail.main_risks")}
+                </div>
                 <ul>
                   {summary.main_risks.map((k, i) => (
                     <li key={i}>{k}</li>
@@ -278,7 +270,9 @@ export default function DocumentDetailPage() {
 
             {summary?.recommended_actions?.length > 0 && (
               <div className="doc-summary-tag-section">
-                <div className="doc-summary-tag-label">{t("detail.recommended_actions")}</div>
+                <div className="doc-summary-tag-label">
+                  {t("detail.recommended_actions")}
+                </div>
                 <ul>
                   {summary.recommended_actions.map((k, i) => (
                     <li key={i}>{k}</li>
@@ -289,7 +283,6 @@ export default function DocumentDetailPage() {
           </div>
         </div>
 
-        {/* Risk Gauge */}
         <div className="doc-detail-card doc-risk-card">
           <div className="doc-card-header">
             <span className="doc-card-title">{t("detail.risk")}</span>
@@ -303,19 +296,15 @@ export default function DocumentDetailPage() {
         </div>
       </div>
 
-      {/* Tabs + 내용 */}
+      {/* Tabs */}
       <div className="doc-detail-card doc-detail-tabs-wrapper">
         <DocumentDetailTabs
           activeTab={activeTab}
           onChange={setActiveTab}
-          counts={{
-            clauses: clauses?.length || 0,
-            terms: terms?.length || 0,
-          }}
+          counts={{ clauses: clauses?.length || 0, terms: terms?.length || 0 }}
         />
 
         <div className="doc-tab-content">
-          {/* Summary 탭 */}
           {activeTab === "summary" && (
             <div className="doc-tab-section">
               <h3>{t("detail.summary")}</h3>
@@ -323,21 +312,18 @@ export default function DocumentDetailPage() {
             </div>
           )}
 
-          {/* Risk 탭 */}
           {activeTab === "risk" && (
             <div className="doc-tab-section">
               <RiskGauge riskProfile={risk_profile} big />
             </div>
           )}
 
-          {/* 조항 탭 */}
           {activeTab === "clauses" && (
             <div className="doc-tab-section">
               <ClauseAccordion clauses={clauses || []} />
             </div>
           )}
 
-          {/* 용어 탭 */}
           {activeTab === "terms" && (
             <div className="doc-tab-section doc-term-grid">
               {(terms || []).map((t, i) => (
@@ -346,7 +332,6 @@ export default function DocumentDetailPage() {
             </div>
           )}
 
-          {/* Raw JSON */}
           {activeTab === "raw" && (
             <div className="doc-tab-section">
               <RawJsonViewer data={documentResult} />
