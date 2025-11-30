@@ -35,7 +35,7 @@ def _get_model():
 
 
 # ----------------------------------------------------------
-# Streaming 응답 처리
+# Streaming 응답 처리 (🔥 완전 안정화 버전)
 # ----------------------------------------------------------
 async def _stream_llm_text(prompt: str) -> str:
     model = _get_model()
@@ -52,9 +52,20 @@ async def _stream_llm_text(prompt: str) -> str:
 
     chunks: list[str] = []
 
-    for chunk in response:   # sync generator
-        if hasattr(chunk, "text") and chunk.text:
-            chunks.append(chunk.text)
+    for chunk in response:
+        try:
+            # 후보가 없으면 skip
+            if not hasattr(chunk, "candidates") or not chunk.candidates:
+                continue
+
+            parts = chunk.candidates[0].content.parts
+            for part in parts:
+                if hasattr(part, "text") and part.text:
+                    chunks.append(part.text)
+
+        except Exception:
+            # finish_reason 등 빈 청크는 무시
+            continue
 
     return "".join(chunks)
 
@@ -135,7 +146,7 @@ def _repair_json(json_text: str) -> str:
 
 
 # ----------------------------------------------------------
-# ★ NEW: 영어/베트남어 리스크레벨 자동 변환 매핑
+# 리스크레벨 자동 변환
 # ----------------------------------------------------------
 RISK_LEVEL_MAP = {
     "low": "낮음",
@@ -154,7 +165,7 @@ RISK_LEVEL_MAP = {
 
 
 # ----------------------------------------------------------
-# DocumentResult 객체 파싱 (안정화 버전)
+# DocumentResult 객체 파싱
 # ----------------------------------------------------------
 def _safe_parse_document_result(data: dict) -> DocumentResult:
 
@@ -177,7 +188,6 @@ def _safe_parse_document_result(data: dict) -> DocumentResult:
         recommended_actions=summary_raw.get("recommended_actions", []) or [],
     )
 
-    # ------------------ 수정된 부분 START ---------------------
     risk_raw = data.get("risk_profile", {}) or {}
 
     def _to_int(x):
@@ -198,7 +208,6 @@ def _safe_parse_document_result(data: dict) -> DocumentResult:
         risk_dimensions=fixed_dims,
         comments=risk_raw.get("comments", ""),
     )
-    # ------------------ 수정된 부분 END ---------------------
 
     clauses_out = []
     for c in data.get("clauses", []) or []:
@@ -264,7 +273,7 @@ async def analyze_contract(
     original_text: str,
     nlp_info: NLPInfo,
     term_definitions: Dict[str, TermDefinition],
-    output_language: str = "ko",   
+    output_language: str = "ko",
 ) -> DocumentResult:
 
     cache_key = contract_cache.make_key(original_text + nlp_info.language)
@@ -273,11 +282,11 @@ async def analyze_contract(
         return cached
 
     prompt = build_contract_analysis_prompt(
-    original_text,
-    nlp_info,
-    term_definitions,
-    output_language  # 추가
-)
+        original_text,
+        nlp_info,
+        term_definitions,
+        output_language,
+    )
 
     raw_text = await _stream_llm_text(prompt)
 
@@ -391,17 +400,15 @@ async def generate_legal_answer_multilang(question: str, language: str = "ko") -
     sections = lang_config["sections"]
 
     prompt = f"""
-{lang_config["system"]} Answer the following question in {language.upper()} language.
+{lang_config["system"]} Answer the question below in {language.upper()}.
 
 Question: {question}
-
-**Format (Markdown):**
 
 ## {sections["summary"]}
 [One sentence summary]
 
 ## {sections["explanation"]}
-[Easy-to-understand explanation]
+[Easy explanation]
 
 ## {sections["key_points"]}
 - [Point 1]
@@ -409,10 +416,10 @@ Question: {question}
 - [Point 3]
 
 ## {sections["risks"]}
-[Legal risks to be aware of]
+[Risk factors]
 
 ## {sections["protections"]}
-[Legal protections and rights]
+[Protections]
 
 ## {sections["actions"]}
 1. [Action 1]
@@ -420,11 +427,11 @@ Question: {question}
 3. [Action 3]
 
 ## {sections["terms"]}
-- **Term1**: Definition
-- **Term2**: Definition
+- Term1: definition
+- Term2: definition
 
 ## {sections["laws"]}
-- [Law name](link)
+- [Law name]
 """
 
     try:
@@ -441,8 +448,8 @@ Question: {question}
     except Exception as e:
         logger.error(f"❌ LLM 답변 생성 실패: {e}")
         error_messages = {
-            "ko": f"답변 생성 중 오류가 발생했습니다: {str(e)}",
+            "ko": f"답변 생성 중 오류: {str(e)}",
             "en": f"Error generating answer: {str(e)}",
-            "vi": f"Lỗi khi tạo câu trả lời: {str(e)}"
+            "vi": f"Lỗi khi tạo câu trả lời: {str(e)}",
         }
         return error_messages.get(language, error_messages["ko"])
