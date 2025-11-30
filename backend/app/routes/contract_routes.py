@@ -15,8 +15,9 @@ from app.services.document_service import (
 from app.nlp.extractor import build_nlp_info
 from app.services.law_api import fetch_term_definitions
 
-from app.db.models import User, Document, Clause, Term
-from app.models.legal import DocumentResult
+from app.db.models import User, Document
+from app.db.legal import Clause, Term
+
 
 
 router = APIRouter(prefix="/contracts", tags=["Contract Analysis"])
@@ -33,20 +34,20 @@ def get_db():
         db.close()
 
 
-
 # =============================================
 # 1) 계약서 전체 분석 + DB 저장 API
 # =============================================
 class ContractAnalyzeRequest(BaseModel):
     text: str
     filename: str = "uploaded.txt"
-    language: str = "ko"
+    language: str = "ko"   # 🔥 언어 선택 추가 (ko/en/vi)
 
 
 class ContractAnalyzeResponse(BaseModel):
     document_id: int
     summary: str
     risk_score: int
+    language: str
 
 
 @router.post("/analyze", response_model=ContractAnalyzeResponse)
@@ -55,7 +56,9 @@ async def analyze_full_contract(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-
+    """
+    TEXT 기반 계약서 분석 API
+    """
     if not req.text.strip():
         raise HTTPException(400, "분석할 텍스트가 비었습니다.")
 
@@ -63,15 +66,15 @@ async def analyze_full_contract(
     nlp_info = build_nlp_info(req.text, language_hint=req.language)
 
     # 2) 용어 정의
-    term_map = await fetch_term_definitions(nlp_info.candidate_terms)
+    term_definitions = await fetch_term_definitions(nlp_info.candidate_terms)
 
-    # 3) LLM 분석
+    # 3) LLM 분석 (🔥 UI 언어 반영)
     analysis: DocumentResult = await analyze_contract(
-    original_text=req.text,
-    nlp_info=nlp_info,
-    term_definitions=term_map,
-    output_language=req.language
-)
+        original_text=req.text,
+        nlp_info=nlp_info,
+        term_definitions=term_definitions,
+        output_language=req.language,  # 🔥 핵심
+    )
 
     # 4) DB 저장
     saved = save_document(
@@ -79,6 +82,7 @@ async def analyze_full_contract(
         analysis=analysis,
         file_name=req.filename,
         user_id=current_user.id,
+        language=req.language,   # 🔥 저장 시 언어 포함
     )
 
     # 5) 응답
@@ -86,6 +90,7 @@ async def analyze_full_contract(
         document_id=saved.id,
         summary=analysis.summary.overall_summary,
         risk_score=analysis.risk_profile.overall_risk_score,
+        language=req.language,
     )
 
 
@@ -108,13 +113,15 @@ def list_all_documents(
             "summary": d.summary,
             "risk_score": d.risk_score,
             "created_at": d.created_at,
+            "language": d.language,     # 🔥 언어 포함
+            "is_favorite": d.is_favorite,
         }
         for d in docs
     ]
 
 
-# =============================================
-# 3) 문서 상세 조회 API
+## =============================================
+# 3) 문서 상세 조회 API (수정 버전)
 # =============================================
 @router.get("/{document_id}")
 def get_document_detail(
@@ -135,13 +142,13 @@ def get_document_detail(
         "title": doc.title,
         "summary": doc.summary,
         "risk_score": doc.risk_score,
+        "risk_level": doc.risk_level or "중간",   # 🔥 추가
         "parties": doc.parties,
         "domain_tags": doc.domain_tags,
         "language": doc.language,
         "created_at": doc.created_at,
+        "is_favorite": doc.is_favorite,
     }
-
-
 # =============================================
 # 4) 문서 조항 목록 조회 API
 # =============================================
@@ -151,7 +158,7 @@ def get_document_clauses(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # 유효 문서인지 검증
+    # 문서 검증
     doc = db.query(Document).filter(
         Document.id == document_id,
         Document.user_id == current_user.id
@@ -209,7 +216,7 @@ def get_document_terms(
 
 
 # =============================================
-# 6) 문서 삭제 API (추가)
+# 6) 문서 삭제 API
 # =============================================
 @router.delete("/{document_id}/delete")
 def delete_contract(
@@ -236,7 +243,7 @@ def delete_contract(
 
 
 # =============================================
-# 7) 문서 즐겨찾기 토글 API (추가)
+# 7) 문서 즐겨찾기 토글 API
 # =============================================
 @router.post("/{document_id}/favorite")
 def toggle_favorite(
