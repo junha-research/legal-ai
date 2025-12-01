@@ -1,0 +1,178 @@
+.docs-page {
+  padding: 24px 26px;
+}
+
+.docs-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.docs-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
+/* 검색, 필터 */
+.docs-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+.filter-select {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+}
+
+/* 카드 그리드 (2열 → 반응형) */
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+/* 문서 카드 */
+.doc-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+
+  transition: 0.2s;
+}
+
+.doc-card:hover {
+  transform: translateY(-2px);
+}
+
+.doc-icon {
+  font-size: 32px;
+  opacity: 0.85;
+}
+
+/* 제목, 요약 */
+.doc-content {
+  text-decoration: none;
+  color: #111;
+  flex: 1;
+}
+
+.doc-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.doc-summary {
+  font-size: 12px;
+  color: #6b7280;
+  height: 32px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+/* 정보 라벨 */
+.badge {
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  margin-right: 6px;
+}
+
+.risk-높음 { background: #ef4444; }
+.risk-중간 { background: #f59e0b; }
+.risk-낮음 { background: #22c55e; }
+
+.badge.score {
+  background: #3b82f6;
+}
+
+.doc-info-row {
+  margin-bottom: 4px;
+}
+
+.doc-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 즐겨찾기 / 삭제 버튼 */
+.doc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-fav, .btn-delete {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.btn-fav {
+  color: #facc15;
+}
+
+.btn-delete {
+  color: #ef4444;
+}
+
+/* 삭제 모달 */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-box {
+  background: #fff;
+  width: 300px;
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.modal-cancel {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.modal-delete {
+  padding: 6px 14px;
+  background: #ef4444;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+}
