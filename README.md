@@ -99,7 +99,7 @@ React Context + i18n 구조로 전체 UI 번역 가능.
 cd backend
 uvicorn app.main:app --reload
 ```
-### Backend
+### Frontend
 ```
 cd legal-ai-frontend
 npm install
