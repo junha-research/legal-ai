@@ -1,0 +1,520 @@
+/* ============ Document Detail Page ============ */
+
+.doc-detail-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.doc-detail-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  margin-bottom: 18px;
+}
+
+.doc-detail-loading,
+.doc-detail-error {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Header */
+
+.doc-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.doc-detail-title-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-detail-title {
+  margin: 6px 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.doc-detail-meta-text {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.doc-detail-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.doc-chip {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Actions */
+
+.doc-detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.doc-btn {
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.doc-btn.ghost {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.doc-btn.ghost.favorite {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  color: #92400e;
+}
+
+/* Top Grid */
+
+.doc-detail-top-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.3fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+/* Summary card */
+
+.doc-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.doc-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.doc-summary-main {
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.doc-summary-one-line {
+  font-size: 13px;
+  color: #4b5563;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.doc-summary-tags-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.doc-summary-tag-section {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.doc-summary-tag-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.doc-summary-tag-section ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #374151;
+}
+
+/* Risk Card */
+.doc-risk-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabs */
+
+.doc-detail-tabs-wrapper {
+  margin-top: 4px;
+}
+
+.doc-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0 -4px;
+}
+
+.doc-tab-item {
+  border: none;
+  background: transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #6b7280;
+  border-radius: 999px 999px 0 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doc-tab-item.active {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-bottom: 2px solid #1d4ed8;
+}
+
+.doc-tab-badge {
+  font-size: 11px;
+  background: #1d4ed8;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.doc-tab-content {
+  padding-top: 10px;
+}
+
+.doc-tab-section {
+  font-size: 13px;
+  color: #111827;
+}
+
+.doc-term-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.doc-empty {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Accordion */
+
+.doc-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doc-accordion-item {
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.doc-accordion-header {
+  width: 100%;
+  border: none;
+  background: #f9fafb;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.doc-accordion-title-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.doc-accordion-id {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.doc-accordion-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.doc-accordion-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.doc-accordion-risk {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.doc-accordion-risk-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.doc-accordion-chevron {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.doc-accordion-body {
+  padding: 10px 12px 12px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.doc-accordion-summary {
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.doc-accordion-sub {
+  margin-top: 6px;
+}
+
+.doc-accordion-sub-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.doc-accordion-sub ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+}
+
+/* Term Card */
+
+.term-card {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.term-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.term-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
+}
+
+.term-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.term-korean {
+  font-size: 12px;
+  color: #111827;
+  line-height: 1.4;
+}
+
+.term-english {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.term-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.term-footer {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* Raw JSON */
+
+.raw-json {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.raw-json-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.raw-json-toggle {
+  border: none;
+  background: #e5e7eb;
+  border-radius: 999px;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.raw-json-body {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  background: #000000;
+  color: #e5e7eb;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Risk Gauge */
+
+.risk-gauge {
+  font-size: 12px;
+  color: #111827;
+}
+
+.risk-gauge-big {
+  padding: 4px 0;
+}
+
+.risk-gauge-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.risk-gauge-level {
+  font-weight: 600;
+}
+
+.risk-gauge-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.risk-gauge-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.risk-gauge-fill.level-0 {
+  background: #16a34a;
+}
+.risk-gauge-fill.level-1 {
+  background: #eab308;
+}
+.risk-gauge-fill.level-2 {
+  background: #f97316;
+}
+.risk-gauge-fill.level-3 {
+  background: #dc2626;
+}
+
+.risk-gauge-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.risk-gauge-legend-item.active {
+  color: #111827;
+  font-weight: 600;
+}
+
+.risk-gauge-dimensions {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.risk-dimension-item {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .doc-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .doc-detail-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .doc-detail-top-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
