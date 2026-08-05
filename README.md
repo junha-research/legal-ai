@@ -1,7 +1,7 @@
 # Legal-AI — 법률 문서 분석 · 법령/판례 Dynamic RAG 챗봇
 
 > **3줄 요약**
-> 1. 계약서 분석 + 법률 질의응답을 제공하는 한림대 캡스톤 팀 프로젝트입니다 (FastAPI + React + Streamlit RAG 데모).
+> 1. 법령·판례를 근거로 답하는 법률 질의응답 챗봇 — 한림대 캡스톤 팀 프로젝트(**동상 수상**)의 RAG 엔진입니다.
 > 2. 방대한 법령 전체를 미리 인덱싱하는 대신, 질문마다 필요한 법령만 국가법령정보 API로 가져와 **실시간(in-memory) 벡터화하는 dynamic RAG**를 구현했습니다.
 > 3. 판례는 사전 구축한 FAISS DB에서 검색해 법령과 함께 답변 근거로 제시하고, DeepEval(Faithfulness/Relevancy)로 환각 여부를 평가합니다.
 
@@ -15,7 +15,7 @@
 - **Static RAG (판례)**: 판례는 개정되지 않으므로 공개 판례 데이터셋(korean_law_open_data_precedents)을 사건명·판시사항·판결요지 구조로 정리해 FAISS DB를 사전 구축했습니다 (`build_precedent_db.py`).
 - **하이브리드 답변 생성**: 검색된 법령 조항 + 유사 판례를 함께 프롬프트에 넣고, "① 법령 원칙 → ② 판례의 실제 적용·예외 → ③ 보충 설명" 순서로 답하도록 답변 구조를 강제했습니다.
 - **환각 평가**: DeepEval의 Faithfulness(답변이 검색 문서에 근거하는가)·Answer Relevancy 지표를 Gemini 기반 evaluator로 측정하는 파이프라인을 붙였습니다.
-- **서비스 레이어**: FastAPI 백엔드(계약서 업로드→OCR/텍스트 추출→조항별 위험도 분석→PostgreSQL 저장) + React 프론트(다국어 ko/en/vi) + Streamlit 데모(4개 탭: 쉬운 법률 해석 / 법령 상담 / 판례 상담 / 하이브리드 상담)로 구성했습니다.
+- **Streamlit 데모**: 쉬운 법률 해석(법제처 용어 사전 연동) / 법령 상담 / 판례 상담 / 하이브리드 상담(평가 포함) 4개 탭으로 전체 파이프라인을 시연합니다. 캡스톤에서는 이 엔진 위에 계약서 분석 서비스(FastAPI + React)를 팀으로 함께 개발했으며, 이 저장소는 그중 RAG 엔진을 담고 있습니다.
 
 ## Results (결과)
 
@@ -26,6 +26,7 @@
 | 임베딩 | jhgan/ko-sbert-nli (한국어 특화) |
 | 답변 평가 | DeepEval Faithfulness / Answer Relevancy 파이프라인 구축 |
 | 정량 평가 점수 (테스트셋 기준) | 측정 예정 |
+| 수상 | 한림대학교 캡스톤 디자인 **동상** |
 
 ## What I learned / Limitations
 
@@ -37,14 +38,9 @@
 ## Quick start
 
 ```bash
-# RAG 데모 (Streamlit)
 pip install -r requirements.txt
 python build_precedent_db.py     # 판례 FAISS DB 구축 (최초 1회)
 streamlit run app.py             # .env에 GEMINI_API_KEY, MOLEG_API_KEY 필요
-
-# 서비스 (FastAPI + React)
-cd backend && uvicorn app.main:app --reload
-cd frontend && npm install && npm start
 ```
 
 ## 파일 구조
@@ -57,8 +53,6 @@ precedent_rag.py        # static RAG: 사전 구축 판례 FAISS 검색
 build_precedent_db.py   # 판례 벡터 DB 구축 스크립트
 legal_dict.py           # 법제처 API 기반 법률 용어 사전
 llm_service.py          # Gemini 호출: 법령명 추출, 답변 생성, 쉬운 해석
-backend/                # FastAPI: 계약서 분석·저장 API (PostgreSQL)
-frontend/               # React: 문서함·상세 분석·다국어 UI
 ```
 
 ## License
