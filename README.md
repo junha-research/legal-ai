@@ -1,9 +1,10 @@
-# Legal-AI — 법률 문서 분석 · 법령/판례 Dynamic RAG 챗봇
+# Legal-AI — 법령·판례 Dynamic RAG 법률 상담 챗봇
 
-> **3줄 요약**
-> 1. 법령·판례를 근거로 답하는 법률 질의응답 챗봇 — 한림대 캡스톤 팀 프로젝트(**동상 수상**)의 RAG 엔진입니다.
-> 2. 방대한 법령 전체를 미리 인덱싱하는 대신, 질문마다 필요한 법령만 국가법령정보 API로 가져와 **실시간(in-memory) 벡터화하는 dynamic RAG**를 구현했습니다.
-> 3. 판례는 사전 구축한 FAISS DB에서 검색해 법령과 함께 답변 근거로 제시하고, DeepEval(Faithfulness/Relevancy)로 환각 여부를 평가합니다.
+## 3줄 요약
+
+- 법령·판례를 근거로 답하는 법률 질의응답 챗봇 — 한림대 캡스톤 팀 프로젝트(**동상 수상**)의 RAG 엔진입니다.
+- 방대한 법령 전체를 미리 인덱싱하는 대신, 질문마다 필요한 법령만 국가법령정보 API로 가져와 **실시간(in-memory) 벡터화하는 dynamic RAG**를 구현했습니다.
+- 판례는 사전 구축한 FAISS DB에서 검색해 법령과 함께 답변 근거로 제시하고, DeepEval(Faithfulness/Relevancy)로 환각 여부를 평가합니다.
 
 ## Problem (문제)
 
@@ -34,6 +35,25 @@
 - **한계 1**: 법령명 추출이 틀리면(예: 복수 법령에 걸친 질문) 검색 전체가 어긋납니다. 다중 법령 검색과 재질의(fallback) 로직이 필요합니다.
 - **한계 2**: 실시간 벡터화는 조문이 많은 법령(상위 100개 조문으로 제한)에서 질의당 수 초의 지연이 있습니다. 자주 묻는 법령의 인덱스 캐싱이 다음 개선입니다.
 - **한계 3**: DeepEval 평가를 파이프라인으로 붙였지만 고정 테스트셋 기반 정량 리포트까지는 만들지 못했습니다.
+
+## 아키텍처
+
+```
+사용자 질문 (Streamlit)
+   → 법령명 추출 (gemini-2.5-flash-lite, JSON 모드)
+   → [Source 1: 법령 — dynamic]              [Source 2: 판례 — static]
+      국가법령정보센터 API로 전문 조회          사전 구축 FAISS DB 검색
+      → 조문 단위 XML 파싱                     (korean_law_open_data_precedents)
+      → in-memory FAISS 즉석 생성
+      → 의미 검색으로 관련 조항 추출
+   → 법령 + 판례를 하나의 프롬프트로 병합 (법령 원칙 → 판례 적용 → 보충 설명 순서 강제)
+   → 답변 생성 (gemini-2.5-flash)
+   → DeepEval 평가 (Faithfulness / Answer Relevancy)
+```
+
+- **런타임**: Streamlit (RAG 데모) — 캡스톤 서비스 레이어는 FastAPI + React로 별도 개발
+- **검색/DB**: FAISS (법령: in-memory 즉석 생성 / 판례: 로컬 사전 구축) + `jhgan/ko-sbert-nli` 임베딩
+- **LLM**: Gemini 2.5 Flash (답변), 2.5 Flash-Lite (법령명 추출)
 
 ## Quick start
 
