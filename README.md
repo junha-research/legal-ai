@@ -41,11 +41,8 @@
 ```
 사용자 질문 (Streamlit)
    → 법령명 추출 (gemini-2.5-flash-lite, JSON 모드)
-   → [Source 1: 법령 — dynamic]              [Source 2: 판례 — static]
-      국가법령정보센터 API로 전문 조회          사전 구축 FAISS DB 검색
-      → 조문 단위 XML 파싱                     (korean_law_open_data_precedents)
-      → in-memory FAISS 즉석 생성
-      → 의미 검색으로 관련 조항 추출
+   → [법령 검색 · dynamic] 국가법령정보 API로 전문 조회 → 조문 단위 파싱 → in-memory FAISS 즉석 생성 → 관련 조항 추출
+   → [판례 검색 · static] 사전 구축 FAISS DB에서 유사 판례 검색 (korean_law_open_data_precedents)
    → 법령 + 판례를 하나의 프롬프트로 병합 (법령 원칙 → 판례 적용 → 보충 설명 순서 강제)
    → 답변 생성 (gemini-2.5-flash)
    → DeepEval 평가 (Faithfulness / Answer Relevancy)
